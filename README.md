@@ -1,2 +1,2 @@
 # OnlinePharmacy
-I developed Rest API for online medicine booking and delivery system.
+I created Rest API for online medicine booking and delivery system.
