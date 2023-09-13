@@ -2,13 +2,13 @@
 I created Rest API for online medicine booking and delivery system.
 
 I have created API of
-ADMIN
-ADDRESS
-MEDICAL_STORE
-STAFF
-MEDICINE
-CUSTOMER
-BOOKING
+ADMIN,
+ADDRESS.
+MEDICAL_STORE.
+STAFF.
+MEDICINE.
+CUSTOMER.
+BOOKING.
 
 
 Flow of that project (if you test on POSTMAN)
