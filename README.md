@@ -97,7 +97,7 @@ Endpoint / Url to test this api
                               URL - localhost:8080/Address?addressId=VALUE
 
 
-      3) MEDICAL_STORE    
+ 3) MEDICAL_STORE    
 
                        SAVE MEDICAL_STORE - At the time you will saving medicalstore you must to provide ADMINID and ADDRESSID
                                              [which admin create this medical and medical address]
