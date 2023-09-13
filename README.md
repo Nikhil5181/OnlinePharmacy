@@ -11,7 +11,7 @@ CUSTOMER.
 BOOKING.
 
 
-Flow of that project (if you test on POSTMAN)
+Flow of this project (if you test on POSTMAN)
 - First we create the admin
 - second we carete the address
 - admin has reponsibility to create staff and medicalStore
