@@ -63,8 +63,7 @@ Endpoint / Url to test this api
                              METHOD - GET
                              URL - localhost:8080/admin?adminId=VALUE                      
 
-
-   2) ADDRESS -
+2) ADDRESS -
   
 
                 SAVE ADDRESS -
