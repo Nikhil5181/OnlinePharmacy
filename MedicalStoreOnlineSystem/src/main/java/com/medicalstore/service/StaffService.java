@@ -106,13 +106,10 @@ public class StaffService {
 			
 				if(staff.getAdmin().getAdminId() == adminId) {
 					
-					staff.setAdmin(null);
-					staff.setMedicalStore(null);
-					
-					return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.FOUND.value(),
+					return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.GONE.value(),
 																		"Staff Found...",
 																		staffDao.deleteStaffById(staffId)),
-																		HttpStatus.FOUND);
+																		HttpStatus.GONE);
 					
 				}
 				throw new UnauthorizedAdmin("This admin does not have permission to delete this staff information...");

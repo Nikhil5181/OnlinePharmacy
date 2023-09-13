@@ -10,6 +10,7 @@ import com.medicalstore.config.ResponseStructure;
 import com.medicalstore.dao.AdminDAO;
 import com.medicalstore.dto.AdminDTO;
 import com.medicalstore.entity.Admin;
+import com.medicalstore.exception.EmailNotFoundException;
 import com.medicalstore.exception.FailToForgotPasswordException;
 import com.medicalstore.exception.InvalidUsernameAndPassword;
 
@@ -80,7 +81,9 @@ public class AdminService {
 	public ResponseEntity<ResponseStructure<AdminDTO>> forgotPassword(String email,String newPassword,String adminPhone){
 		
 		Admin admin = adminDao.findAdminByEmail(email);
-
+		
+		if(admin == null) throw new EmailNotFoundException("Your specified email admin not found...!");
+		
 		if(admin.getPhoneNumber().equals(adminPhone)){
 			admin.setPassword(newPassword);
 			

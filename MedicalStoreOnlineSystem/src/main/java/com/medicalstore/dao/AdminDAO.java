@@ -44,7 +44,7 @@ public class AdminDAO {
 			if(optional.isPresent())
 				return optional.get();
 			
-			throw new EmailNotFoundException("Your specified email admin not found...!");
+			return null;
 	}
 
 	public Admin findAdminByPhoneNumber(String phoneNumber){

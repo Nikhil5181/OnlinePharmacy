@@ -12,8 +12,11 @@ import com.medicalstore.config.ResponseStructure;
 import com.medicalstore.dao.AddressDAO;
 import com.medicalstore.dao.AdminDAO;
 import com.medicalstore.dao.MedicalStoreDAO;
+import com.medicalstore.dao.MedicineDAO;
+import com.medicalstore.dao.StaffDAO;
 import com.medicalstore.dto.MedicalStoreDTO;
 import com.medicalstore.entity.MedicalStore;
+import com.medicalstore.entity.Staff;
 import com.medicalstore.exception.AddressAlreadyAssigned;
 import com.medicalstore.exception.UnauthorizedAdmin;
 
@@ -31,6 +34,12 @@ public class MedicalStoreService {
 	
 	@Autowired
 	private AddressDAO addressDao;
+	
+	@Autowired
+	private StaffDAO staffDao;
+	
+	@Autowired
+	private MedicineDAO medicineDao;
 	
 	@Autowired
 	private CheckDuplicateEntry duplicate;
@@ -106,13 +115,22 @@ public class MedicalStoreService {
 			
 			if(oldMedical.getAdmin().getAdminId() == adminId) {
 				
-					oldMedical.setAdmin(null);
-					oldMedical.setAddress(null);
+					List<Staff> staffList  = staffDao.getAllStaff();
+					
+					for(Staff staff : staffList) {
 						
-				    return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.ACCEPTED.value(),
-																		"MedicalStore Deleted...",
-																		 medicalDao.deleteMedicalStoreById(medicalStoreId)),
-																		 HttpStatus.ACCEPTED);
+						if(staff.getMedicalStore().getStoreId() == medicalStoreId)
+							      staffDao.deleteStaffById(staff.getStaffId());
+							
+					}
+					
+					medicineDao.deleteMedicineByMedicalStore(oldMedical);
+					oldMedical = medicalDao.deleteMedicalStoreById(medicalStoreId);
+					
+				    return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.GONE.value(),
+																		"MedicalStore as well as all MedicalStore related staff and medicine deleted sucessfully...",
+																		 oldMedical),
+																		 HttpStatus.GONE);
 			}
 			
 			throw new UnauthorizedAdmin("Admin does not have permission to delete this medical....");

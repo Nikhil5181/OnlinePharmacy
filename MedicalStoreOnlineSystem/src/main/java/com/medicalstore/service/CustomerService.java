@@ -16,6 +16,7 @@ import com.medicalstore.dto.CustomerDTO;
 import com.medicalstore.entity.Address;
 import com.medicalstore.entity.Customer;
 import com.medicalstore.exception.AddressAlreadyAssigned;
+import com.medicalstore.exception.EmailNotFoundException;
 import com.medicalstore.exception.FailToForgotPasswordException;
 import com.medicalstore.exception.InvalidUsernameAndPassword;
 
@@ -101,7 +102,7 @@ public class CustomerService {
        
 		Customer customer  = customerDao.findCustomerByEmail(customerEmail);	
 
-		if(!(customer.getPassword().equals(customerPassword)))
+		if(!(customer != null && customer.getPassword().equals(customerPassword)))
 			  throw new InvalidUsernameAndPassword("Invlaid username or password....");
 
 		return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.OK.value(),
@@ -114,6 +115,8 @@ public class CustomerService {
 
 		Customer customer = customerDao.findCustomerByEmail(customerEmail);
 
+		if(customer == null) throw new EmailNotFoundException("Your specified email customer not found....");
+		
 		if(customer.getPhoneNumber().equals(phoneNumber)){
 
 			customer.setPassword(newPassword);

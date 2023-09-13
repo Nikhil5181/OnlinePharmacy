@@ -124,7 +124,6 @@ public class MedicineService {
 				// 		medicineList.remove(medicine);
 				// }
 
-        		//   medicine.setMedicalStore(null);
         		  
         		  return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.ACCEPTED.value(),
         				  											  "Medicine deleted....",

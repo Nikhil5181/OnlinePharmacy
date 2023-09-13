@@ -53,7 +53,7 @@ public class CustomerDAO {
 		if(optional.isPresent())
 			return optional.get();
 		
-		throw new EmailNotFoundException("Your specified email customer not found....");	
+		return null;
 	}
 
 	public Customer findCustomerByPhoneNumber(String phoneNumber){

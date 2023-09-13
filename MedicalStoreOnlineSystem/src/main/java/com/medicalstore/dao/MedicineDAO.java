@@ -1,5 +1,6 @@
 package com.medicalstore.dao;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class MedicineDAO {
 		
 		throw new NameNotFoundException("Medicine name not found....");
 	}
-
+	
 	public Medicine findMedicineByIdAndMedicalStore(long medicineId, MedicalStore medicalStore){
 		Optional<Medicine> optional = repo.findByMedicineIdAndMedicalStore(medicineId,medicalStore);
 		if(optional.isPresent())
@@ -61,6 +62,12 @@ public class MedicineDAO {
 		repo.deleteById(medicineId);
 		
 		return medicine;
+	}
+	
+	public void deleteMedicineByMedicalStore(MedicalStore medicalStore){
+		
+		repo.deleteAllInBatch(repo.findByMedicalStore(medicalStore));
+		
 	}
 	
 }

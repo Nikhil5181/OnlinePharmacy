@@ -1,5 +1,7 @@
 package com.medicalstore.service;
 
+import javax.validation.ConstraintViolationException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,14 +46,14 @@ public class AddressService {
 
 	}
 
+	   
 	public ResponseEntity<ResponseStructure<Address>> deleteAddressById(long addressId) {
-	
+			
 		return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.ACCEPTED.value(),
 															"Address Successfully deleted..",
 															addressDao.deleteAddressById(addressId)),
 															HttpStatus.ACCEPTED);
+		
 
 	}
-
-	
 }

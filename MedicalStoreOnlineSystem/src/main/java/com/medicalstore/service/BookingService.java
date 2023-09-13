@@ -110,12 +110,11 @@ public class BookingService {
 			customer.setBooking(bookingList);
 			booking = bookingDao.saveBooking(booking);
 
-			bookingDto.setBookingId(booking.getBookingId());
-			bookingDto.setQuantity(totalQuantity);
+			bookingDto = this.modelMapper.map(booking,BookingDTO.class);
+			
 			bookingDto.setCustomerDto(this.modelMapper.map(customer,CustomerDTO.class));
 			bookingDto.setMedicineDto(objectMap);
-			bookingDto.setStatus(BookingStatus.ACTIVE); 
-
+		
 			return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.CREATED.value(),
 																"Booking Successfully saved...", 
 																bookingDto),
