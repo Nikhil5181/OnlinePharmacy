@@ -28,7 +28,9 @@ If you want test this api just download POSTMAN tool and test
 Endpoint / Url to test this api
 
 1) ADMIN -
-         SAVE ADMIN -          After running the program you need to hit first save ADMIN that time you will sen JSON 
+
+
+          SAVE ADMIN -          After running the program you need to hit first save ADMIN that time you will sen JSON 
                                METHOD - POST
                                URL -   localhost:8080//admin
                                JON -
@@ -63,6 +65,8 @@ Endpoint / Url to test this api
 
 
    2) ADDRESS -
+  
+
                 SAVE ADDRESS -
                               METHOD - POST
                               URL - localhost:8080/Address
@@ -131,7 +135,9 @@ Endpoint / Url to test this api
                                              URL - localhost:8080/medicalStore/name?medicalStoreName=VALUE
 
 
-   4) STAFF    --- Performing save,update , delete operation of staff admin have permission of that medical store
+   3) STAFF    --- Performing save,update , delete operation of staff admin have permission of that medical store
+  
+
                     SAVE STAFF -
                                   METHOD - POST
                                   URL - localhost:8080//staff?adminId=VALUE&medicalStoreId=VALUE
@@ -263,6 +269,9 @@ Endpoint / Url to test this api
 
 
 8) BOOKING
+
+
+
               CREATE / SAVE BOOKING -
                            METHOD -POST
                            URL -   localhost:8080//booking/VALUE1/VALUE2?MedicineId=MedicineQty&MedicineId=MedicineQty
