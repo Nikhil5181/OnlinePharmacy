@@ -58,9 +58,9 @@ public class CustomerController {
 		return service.login(customerEmail,customerPassword);
 	}
 
-	@GetMapping("/forgot")
-	public ResponseEntity<ResponseStructure<CustomerDTO>> login(@RequestParam String customerEmail,@RequestParam String newPassword,@RequestParam String customerPassword){		
-		return service.forgotPassword(customerEmail,newPassword,customerPassword);
+	@PutMapping("/forgot")
+	public ResponseEntity<ResponseStructure<CustomerDTO>> forgotPassword(@RequestParam String customerEmail,@RequestParam String newPassword,@RequestParam String phoneNumber){		
+		return service.forgotPassword(customerEmail,newPassword,phoneNumber);
 	}
 	
 

@@ -49,7 +49,6 @@ public class MedicalStoreDAO {
 	}
 	
 	public List<MedicalStore> getAllMedicalStore(){
-		
 		return repo.findAll();
 	}
 

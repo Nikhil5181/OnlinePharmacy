@@ -33,164 +33,161 @@ import com.medicalstore.exception.MedicineNotAvailableException;
 
 @Service
 public class BookingService {
-	
+
 	@Autowired
 	private ModelMapper modelMapper;
-	
+
 	@Autowired
 	private CustomerDAO customerDao;
-	
+
 	@Autowired
 	private MedicineDAO medicineDao;
-	
+
 	@Autowired
 	private MedicalStoreDAO medicalStoreDao;
 
 	@Autowired
 	private BookingDAO bookingDao;
+
+	public ResponseEntity<ResponseStructure<BookingDTO>> saveBooking(BookingDTO bookingDto, long customerId,
+			long medicalStoreId, Map<String, String> medicineIdAndQty) {
+
+		/*
+		 * CONTROLLER PASS BOOKING DATA , CUSTOMER ID AND MAP -CONTAINS MEDICINE NUMBER
+		 * AND EACH MEDICINE QTY
+		 */
+
+		// CHECK HASHMAP EMPTY OR NOT
+		if (medicineIdAndQty.isEmpty()) {
+			throw new MedicineDetailNotFound("Please provide medicine Id and Quantity..");
+		}
+
+		// FIRST I CHECK CUSTOMER PRESENT OR NOT
+		Customer customer = customerDao.findCutomerById(customerId);
+		List<Booking> bookingList = customer.getBooking();
+
+		if (bookingList.isEmpty())
+			bookingList = new ArrayList<>();
+
+		MedicalStore medicalStore = medicalStoreDao.findMedicalStoreById(medicalStoreId);
+
+		// THEN GET ALL MEDICINE ID / MEDICINE FORM THE MAP
+		Set<String> medicineId = medicineIdAndQty.keySet();
+
+		// CUSTOMER HAS MANY MEDICINE
+		List<MedicineDTO> medicineListDto = new ArrayList<>();
+		// at the time saving booking save this medicine object and each quantity
+		Long[][] objectMap = new Long[medicineIdAndQty.size()][2];
 		
-	public ResponseEntity<ResponseStructure<BookingDTO>> saveBooking(BookingDTO bookingDto, long customerId, long medicalStoreId,Map<String,String> medicineIdAndQty) {
-		
-		/*CONTROLLER PASS BOOKING DATA , CUSTOMER ID AND MAP -CONTAINS MEDICINE NUMBER AND EACH MEDICINE QTY */
+		int totalQuantity = 0;
+		int arrayIndex = 0;
 
-			//CHECK HASHMAP EMPTY OR NOT 
-			if (medicineIdAndQty.isEmpty()) {
-				throw new MedicineDetailNotFound("Please provide medicine Id and Quantity..");
-			}
+		// THEN CHECK MEDICINE PRESENT OR NOT
+		for (String l : medicineId) {
 
-			//FIRST I CHECK CUSTOMER PRESENT OR NOT
-			Customer customer = customerDao.findCutomerById(customerId);
-			List<Booking> bookingList = customer.getBooking();
+			Medicine medicine = medicineDao.findMedicineByIdAndMedicalStore(Long.parseLong(l), medicalStore);
 
-			if(bookingList.isEmpty())
-				bookingList = new ArrayList<>();
+			if (medicine.getStockQuantity() > 0
+					&& Integer.parseInt(medicineIdAndQty.get(l)) <= medicine.getStockQuantity()) {
 
-			MedicalStore medicalStore = medicalStoreDao.findMedicalStoreById(medicalStoreId);
+				medicineListDto.add(modelMapper.map(medicine, MedicineDTO.class));
 
-			//THEN GET ALL MEDICINE ID / MEDICINE FORM THE MAP 
-			Set<String> medicineId = medicineIdAndQty.keySet();
+				objectMap[arrayIndex][0] = medicine.getMedicineId();
+				objectMap[arrayIndex][1] = Long.parseLong(medicineIdAndQty.get(l));
 
-			//CUSTOMER HAS MANY MEDICINE 
-			List<MedicineDTO> medicineListDto = new ArrayList<>();
-			//at the time saving booking save this medicine object and each quantity
-			Long[][] objectMap  = new Long[medicineIdAndQty.size()][2];
-			//GET ALL MEDICINE COUNT TO SET BOOKING
-			int totalQuantity = 0;
-			int arrayIndex = 0;
+				totalQuantity += Integer.parseInt(medicineIdAndQty.get(l));
+				medicine.setStockQuantity(medicine.getStockQuantity() - Integer.parseInt(medicineIdAndQty.get(l)));
 
-			//THEN CHECK MEDICINE PRESENT OR NOT 
-			for(String l : medicineId){	
+			} else
+				throw new MedicineNotAvailableException("Medicine not available your required qty...");
 
-				Medicine medicine = medicineDao.findMedicineByIdAndMedicalStore(Long.parseLong(l),medicalStore);
+			arrayIndex++;
+		}
 
-				if(medicine.getStockQuantity() > 0 && Integer.parseInt(medicineIdAndQty.get(l)) <= medicine.getStockQuantity()){
+		Booking booking = this.modelMapper.map(bookingDto, Booking.class);
 
+		booking.setQuantity(totalQuantity);
+		booking.setMedicine(objectMap);
+		booking.setCustomer(customer);
+		booking.setStatus(BookingStatus.ACTIVE);
 
-						medicineListDto.add(modelMapper.map(medicine,MedicineDTO.class));
+		customer.setBooking(bookingList);
+		booking = bookingDao.saveBooking(booking);
 
-						objectMap[arrayIndex][0] = medicine.getMedicineId();
-						objectMap[arrayIndex][1] = Long.parseLong(medicineIdAndQty.get(l));
+		bookingDto = this.modelMapper.map(booking, BookingDTO.class);
 
-						totalQuantity += Integer.parseInt(medicineIdAndQty.get(l));
-						medicine.setStockQuantity(medicine.getStockQuantity() - Integer.parseInt(medicineIdAndQty.get(l)));
+		bookingDto.setCustomerDto(this.modelMapper.map(customer, CustomerDTO.class));
+		bookingDto.setMedicineDto(objectMap);
 
-				}
-				else throw new MedicineNotAvailableException("Medicine not available your required qty...");
+		return new ResponseEntity<>(
+				new ResponseStructure<>(HttpStatus.CREATED.value(), "Booking Successfully saved...", bookingDto),
+				HttpStatus.CREATED);
 
-				arrayIndex++;
-			}
-
-			Booking booking = this.modelMapper.map(bookingDto,Booking.class);
-			
-			booking.setQuantity(totalQuantity);
-			booking.setMedicine(objectMap);
-			booking.setCustomer(customer);
-			booking.setStatus(BookingStatus.ACTIVE);
-			
-			customer.setBooking(bookingList);
-			booking = bookingDao.saveBooking(booking);
-
-			bookingDto = this.modelMapper.map(booking,BookingDTO.class);
-			
-			bookingDto.setCustomerDto(this.modelMapper.map(customer,CustomerDTO.class));
-			bookingDto.setMedicineDto(objectMap);
-		
-			return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.CREATED.value(),
-																"Booking Successfully saved...", 
-																bookingDto),
-																HttpStatus.CREATED);
-		
 	}
 
-
-    public ResponseEntity<ResponseStructure<BookingDTO>> cancelBooking(long bookingId) {
+	public ResponseEntity<ResponseStructure<BookingDTO>> cancelBooking(long bookingId) {
 
 		Booking booking = bookingDao.findBookingById(bookingId);
 
-		switch(booking.getStatus()){
+		switch (booking.getStatus()) {
 
-			case ACTIVE :{
+		case ACTIVE: {
 
-				LocalDate cancelledDate = booking.getExpectedDate().minusDays(1);
+			LocalDate cancelledDate = booking.getExpectedDate().minusDays(1);
 
-				if(cancelledDate.equals(LocalDate.now()) || LocalDate.now().isAfter(cancelledDate)){
-					throw new BookingCantBeCancelled("You cant cancel booking now...");
-				}
-				booking.setStatus(BookingStatus.CANCELLED);
-				break;
+			if (cancelledDate.equals(LocalDate.now()) || LocalDate.now().isAfter(cancelledDate)) {
+				throw new BookingCantBeCancelled("You cant cancel booking now...");
 			}
-			case DELIVERD :{
-				 throw new BookingAlredyDeliverd("Medcine on the way you not cancelled....");
-			}
-			case CANCELLED :{
-				throw new BookingAlreadyCancelled("Already Cancelled....");
-			}
+			booking.setStatus(BookingStatus.CANCELLED);
+			break;
 		}
-		
-		Long[][] objectMap = booking.getMedicine();
-		
-		for(int i = 0 ; i < objectMap.length ; i++){
+		case DELIVERD: {
+			throw new BookingAlredyDeliverd("Medcine on the way you not cancelled....");
+		}
+		case CANCELLED: {
+			throw new BookingAlreadyCancelled("Already Cancelled....");
+		}
+		}
 
-			Medicine medi = medicineDao.findMedicineById(objectMap[i][0]); 
+		Long[][] objectMap = booking.getMedicine();
+
+		for (int i = 0; i < objectMap.length; i++) {
+
+			Medicine medi = medicineDao.findMedicineById(objectMap[i][0]);
 			long eachQuantity = objectMap[i][1];
-			medi.setStockQuantity(medi.getStockQuantity() +(int)eachQuantity);
+			medi.setStockQuantity(medi.getStockQuantity() + (int) eachQuantity);
 
 			medicineDao.saveMedicine(medi);
 
-			
 		}
 
-		BookingDTO bookingDto = this.modelMapper.map(bookingDao.saveBooking(booking),BookingDTO.class);
+		BookingDTO bookingDto = this.modelMapper.map(bookingDao.saveBooking(booking), BookingDTO.class);
 		bookingDto.setCustomerDto(this.modelMapper.map(booking.getCustomer(), CustomerDTO.class));
 		bookingDto.setMedicineDto(objectMap);
 
+		return new ResponseEntity<>(
+				new ResponseStructure<>(HttpStatus.ACCEPTED.value(), "Booking Cancelled", bookingDto),
+				HttpStatus.ACCEPTED);
 
-		return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.ACCEPTED.value(),
-															"Booking Cancelled", 
-															bookingDto),
-															HttpStatus.ACCEPTED);
-
-    }
-
+	}
 
 	public ResponseEntity<ResponseStructure<List<BookingDTO>>> getBookings(long customerId) {
-		
-		Customer customer  = customerDao.findCutomerById(customerId);
-		List<Booking> bookingList =  bookingDao.findBookingByCustomer(customer);
+
+		Customer customer = customerDao.findCutomerById(customerId);
+		List<Booking> bookingList = bookingDao.findBookingByCustomer(customer);
 		List<BookingDTO> bookingDtoList = new ArrayList<>();
 
-		for(Booking book : bookingList){
+		for (Booking book : bookingList) {
 
-			BookingDTO bookingDto = this.modelMapper.map(book,BookingDTO.class);
-			bookingDto.setCustomerDto(this.modelMapper.map(book.getCustomer(),CustomerDTO.class));
+			BookingDTO bookingDto = this.modelMapper.map(book, BookingDTO.class);
+			bookingDto.setCustomerDto(this.modelMapper.map(book.getCustomer(), CustomerDTO.class));
 			bookingDto.setMedicineDto(book.getMedicine());
 			bookingDtoList.add(bookingDto);
 		}
 
-		return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.FOUND.value(),
-															"Booking found...",
-															bookingDtoList),
-															 HttpStatus.FOUND);
+		return new ResponseEntity<>(
+				new ResponseStructure<>(HttpStatus.FOUND.value(), "Booking found...", bookingDtoList),
+				HttpStatus.FOUND);
 
 	}
 

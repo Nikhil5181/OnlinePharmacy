@@ -26,13 +26,13 @@ public class MedicineService {
 
 	@Autowired
 	private ModelMapper modelMapper;
-	
+
 	@Autowired
 	private MedicalStoreDAO medicalDao;
-	
+
 	@Autowired
 	private StaffDAO staffDao;
-	
+
 	@Autowired
 	private MedicineDAO medicineDao;
 
@@ -41,98 +41,84 @@ public class MedicineService {
 
 	@Autowired
 	private CheckDuplicateEntry duplicate;
-	
-	
-	public ResponseEntity<ResponseStructure<List<Medicine>>> saveMedicines(List<MedicineDTO> medicineDto,long medicalStoreId, long staffId) {
 
-				Set<MedicineDTO> medicineSet = new TreeSet<>(medicineDto);
-		
-				List<Medicine> listMedicine = new ArrayList<>();
-				
-				if(staffDao.findStaffById(staffId).getMedicalStore().getStoreId() == medicalStoreId) {
-					duplicate.checkDuplicateMedicine(medicineSet,medicalStoreId);
-					
-					for(MedicineDTO medicine : medicineSet){
-						Medicine medicineEntity = this.modelMapper.map(medicine,Medicine.class);
-						medicineEntity.setMedicalStore(medicalDao.findMedicalStoreById(medicalStoreId));
-						listMedicine.add(medicineDao.saveMedicine(medicineEntity));
-					}
-				}
-				else {
-					throw new UnauthorizedStaff("This Staff does not have permission to add medicine this medical store....");
-				}
-		
-				return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.CREATED.value(),
-																	"Medicines Successfully Stored...",
-																	listMedicine),
-																	HttpStatus.CREATED);
+	public ResponseEntity<ResponseStructure<List<Medicine>>> saveMedicines(List<MedicineDTO> medicineDto,
+			long medicalStoreId, long staffId) {
+
+		Set<MedicineDTO> medicineSet = new TreeSet<>(medicineDto);
+
+		List<Medicine> listMedicine = new ArrayList<>();
+
+		if (staffDao.findStaffById(staffId).getMedicalStore().getStoreId() == medicalStoreId) {
+			duplicate.checkDuplicateMedicine(medicineSet, medicalStoreId);
+
+			for (MedicineDTO medicine : medicineSet) {
+				Medicine medicineEntity = this.modelMapper.map(medicine, Medicine.class);
+				medicineEntity.setMedicalStore(medicalDao.findMedicalStoreById(medicalStoreId));
+				listMedicine.add(medicineDao.saveMedicine(medicineEntity));
+			}
+		} else {
+			throw new UnauthorizedStaff("This Staff does not have permission to add medicine this medical store....");
+		}
+
+		return new ResponseEntity<>(
+				new ResponseStructure<>(HttpStatus.CREATED.value(), "Medicines Successfully Stored...", listMedicine),
+				HttpStatus.CREATED);
 	}
 
+	public ResponseEntity<ResponseStructure<Medicine>> updateMedicine(MedicineDTO medicineDto, long medicineId,
+			long staffId) {
 
-	public ResponseEntity<ResponseStructure<Medicine>> updateMedicine(MedicineDTO medicineDto, long medicineId,long staffId) {
-			
-				Medicine medicine = medicineDao.findMedicineById(medicineId);
-				long medicalStoreId = medicine.getMedicalStore().getStoreId();
-				if(medicalStoreId == staffDao.findStaffById(staffId).getMedicalStore().getStoreId()) {
-	
-					Medicine medicineEntity = this.modelMapper.map(medicineDto,Medicine.class);
-					medicineEntity.setMedicineId(medicineId);
-					//doubt
-					// medicineEntity.setMedicineName(medicine.getMedicineName());
-					duplicate.checkDuplicateMedicine(medicineEntity, medicalStoreId);
-					medicineEntity.setMedicalStore(medicine.getMedicalStore());
+		Medicine medicine = medicineDao.findMedicineById(medicineId);
+		long medicalStoreId = medicine.getMedicalStore().getStoreId();
+		if (medicalStoreId == staffDao.findStaffById(staffId).getMedicalStore().getStoreId()) {
 
-					return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.OK.value(),
-																		"Medicine Updated....",
-																		medicineDao.saveMedicine(medicineEntity)),
-																		HttpStatus.OK);
-					
-					
-				}
-				throw new UnauthorizedStaff("This Staff does not have permission to update medicine this medical store....");	
+			Medicine medicineEntity = this.modelMapper.map(medicineDto, Medicine.class);
+			medicineEntity.setMedicineId(medicineId);
+			// doubt
+			// medicineEntity.setMedicineName(medicine.getMedicineName());
+			duplicate.checkDuplicateMedicine(medicineEntity, medicalStoreId);
+			medicineEntity.setMedicalStore(medicine.getMedicalStore());
+
+			return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.OK.value(), "Medicine Updated....",
+					medicineDao.saveMedicine(medicineEntity)), HttpStatus.OK);
+
+		}
+		throw new UnauthorizedStaff("This Staff does not have permission to update medicine this medical store....");
 	}
-
 
 	public ResponseEntity<ResponseStructure<Medicine>> findMedicineById(long medicineId) {
-				
-			    return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.FOUND.value(),
-					       											"Medicine found...",
-							    									 medicineDao.findMedicineById(medicineId)),
-								    								 HttpStatus.FOUND);
-	}
 
+		return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.FOUND.value(), "Medicine found...",
+				medicineDao.findMedicineById(medicineId)), HttpStatus.FOUND);
+	}
 
 	public ResponseEntity<ResponseStructure<Medicine>> findMedicineByName(String medicineName) {
-			
-		       return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.FOUND.value(),
-									        						"Medicine found...",
-											        				 medicineDao.findMedicineByName(medicineName)),
-													        		 HttpStatus.FOUND);
+
+		return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.FOUND.value(), "Medicine found...",
+				medicineDao.findMedicineByName(medicineName)), HttpStatus.FOUND);
 	}
 
-	public ResponseEntity<ResponseStructure<Medicine>> deleteMedicineById(long medicineId,long staffId) {
-		
-		      Medicine medicine = medicineDao.findMedicineById(medicineId);
-				
-        	  if(medicine.getMedicalStore().getStoreId() == staffDao.findStaffById(staffId).getMedicalStore().getStoreId()) {
-        		  
-				// List<Booking> bookingList = bookingDao.findBookingByMedicine(medicine);
-				
-				// for(Booking booking : bookingList){
-				// 	List<Medicine> medicineList = booking.getMedicine();
-				// 	if(medicineList.contains(medicine))
-				// 		medicineList.remove(medicine);
-				// }
+	public ResponseEntity<ResponseStructure<Medicine>> deleteMedicineById(long medicineId, long staffId) {
 
-        		  
-        		  return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.ACCEPTED.value(),
-        				  											  "Medicine deleted....",
-        				  											  	medicineDao.deleteMedicineById(medicineId)),
-        				  												HttpStatus.ACCEPTED);	
-        		  
-        	  }
-        	  throw new UnauthorizedStaff("This Staff does not have permission to delelte medicine this medical store....");
-		
+		Medicine medicine = medicineDao.findMedicineById(medicineId);
+
+		if (medicine.getMedicalStore().getStoreId() == staffDao.findStaffById(staffId).getMedicalStore().getStoreId()) {
+
+			// List<Booking> bookingList = bookingDao.findBookingByMedicine(medicine);
+
+			// for(Booking booking : bookingList){
+			// List<Medicine> medicineList = booking.getMedicine();
+			// if(medicineList.contains(medicine))
+			// medicineList.remove(medicine);
+			// }
+
+			return new ResponseEntity<>(new ResponseStructure<>(HttpStatus.ACCEPTED.value(), "Medicine deleted....",
+					medicineDao.deleteMedicineById(medicineId)), HttpStatus.ACCEPTED);
+
+		}
+		throw new UnauthorizedStaff("This Staff does not have permission to delelte medicine this medical store....");
+
 	}
 
 }

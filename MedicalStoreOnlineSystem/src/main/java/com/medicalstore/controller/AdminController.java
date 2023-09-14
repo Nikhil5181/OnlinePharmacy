@@ -30,7 +30,7 @@ public class AdminController {
 	}
 	
 	@PutMapping
-	public ResponseEntity<ResponseStructure<AdminDTO>> saveAdmin(@Validated @RequestBody Admin admin , @RequestParam long adminId){
+	public ResponseEntity<ResponseStructure<AdminDTO>> updateAdmin(@Validated @RequestBody Admin admin , @RequestParam long adminId){
 		return service.updateAdmin(admin,adminId);
 	}
 	
@@ -44,7 +44,7 @@ public class AdminController {
 		return service.login(email,password);
 	}
 	
-	@GetMapping("/forgot")
+	@PutMapping("/forgot")
 	public ResponseEntity<ResponseStructure<AdminDTO>> forgotPassword(@RequestParam String email,@RequestParam String newPassword,@RequestParam String adminPhoneNumber){
 		return service.forgotPassword(email,newPassword,adminPhoneNumber);
 	}
